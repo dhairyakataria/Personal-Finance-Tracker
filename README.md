@@ -54,7 +54,7 @@ personal-finance-tracker/
 ├── requirements.txt          # Python dependencies
 ├── populate_defaults.py      # Script for adding default categories/subcategories
 └── README.md                 # This file
-
+```
 
 ## Database Models
 
