@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Dashboard</h1>
+
+    <!-- Financial Summary -->
+    <div class="row text-center my-4">
+        <div class="col-md-4">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Income</h5>
+                    <p class="card-text">₹{{ total_income }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Expenses</h5>
+                    <p class="card-text">₹{{ total_expenses }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Remaining Balance</h5>
+                    <p class="card-text">₹{{ remaining_balance }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row my-4">
+        <div class="col-md-6">
+            <h5>Spending by Category</h5>
+            <canvas id="categoryChart"></canvas>
+        </div>
+        <div class="col-md-6">
+            <h5>Income vs Expenses</h5>
+            <canvas id="incomeExpenseChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="my-4">
+        <h5>Recent Transactions</h5>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Account</th>
+                    <th>Category</th>
+                    <th>Subcategory</th>
+                    <th>Amount</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Currency</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in recent_transactions %}
+                <tr>
+                    <td>{{ transaction.transaction_date.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ transaction.account_name }}</td>
+                    <td>{{ transaction.category_name }}</td>
+                    <td>{{ transaction.subcategory_name }}</td>
+                    <td>₹{{ transaction.amount }}</td>
+                    <td>{{ transaction.transaction_type.title() }}</td>
+                    <td>{{ transaction.description }}</td>
+                    <td>{{ transaction.currency }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Pass data from Flask to JavaScript
+    const categoryData = {
+        labels: {{ spending_by_category | map(attribute=0) | list | tojson }},  // Extract category names
+        datasets: [{
+            label: 'Spending by Category',
+            data: {{ spending_by_category | map(attribute=1) | list | tojson }},  // Extract spending values
+            backgroundColor: ['#007bff', '#dc3545', '#ffc107', '#28a745', '#17a2b8', '#6f42c1'] // Add more colors if needed
+        }]
+    };
+
+
+    const incomeExpenseData = {
+        labels: ["Income", "Expense"],
+        datasets: [{
+            label: 'Income vs Expense',
+            data: {{ [income_vs_expense['income'], income_vs_expense['expense']]|tojson }},
+            backgroundColor: ['#28a745', '#dc3545'],
+        }]
+    };
+
+    // Initialize Charts
+    new Chart(document.getElementById('categoryChart'), { type: 'bar', data: categoryData });
+    new Chart(document.getElementById('incomeExpenseChart'), { type: 'pie', data: incomeExpenseData });
+</script>
+
+{% endblock %}
